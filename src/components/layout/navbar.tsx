@@ -6,6 +6,7 @@ import { siteConfig } from "@/config/site";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "./mobile-nav";
 import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = React.useState(false);
@@ -22,7 +23,7 @@ export function Navbar() {
     <header
       className={`fixed top-0 w-full z-50 transition-all duration-300 border-b ${
         isScrolled
-          ? "bg-zinc-950/80 backdrop-blur-md border-zinc-800"
+          ? "bg-background/80 backdrop-blur-md border-primary"
           : "bg-transparent border-transparent"
       }`}
     >
@@ -39,7 +40,7 @@ export function Navbar() {
             <Link
               key={item.href}
               href={item.href}
-              className="text-sm font-medium text-zinc-400 hover:text-zinc-100 transition-colors"
+              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
             >
               {item.name}
             </Link>
@@ -48,19 +49,21 @@ export function Navbar() {
 
         <div className="hidden md:flex items-center space-x-4">
           <Link href={siteConfig.social.github} target="_blank" rel="noreferrer">
-            <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-zinc-100">
+            <Button variant="ghost" size="icon" className="text-foreground hover:text-primary">
               <FaGithub className="h-5 w-5" />
             </Button>
           </Link>
           <Link href={siteConfig.social.linkedin} target="_blank" rel="noreferrer">
-            <Button variant="ghost" size="icon" className="text-zinc-400 hover:text-zinc-100">
+            <Button variant="ghost" size="icon" className="text-foreground hover:text-primary">
               <FaLinkedin className="h-5 w-5" />
             </Button>
           </Link>
+          <ThemeToggle />
         </div>
 
         {/* Mobile Nav */}
-        <div className="md:hidden">
+        <div className="md:hidden flex items-center space-x-2">
+          <ThemeToggle />
           <MobileNav />
         </div>
       </div>
