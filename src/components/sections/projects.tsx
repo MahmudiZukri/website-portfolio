@@ -9,8 +9,8 @@ import { ExternalLink, Loader2, X, ChevronLeft, ChevronRight, Images } from "luc
 import { FaGithub } from "react-icons/fa";
 import { insforge, type Project } from "@/lib/insforge";
 import Image from "next/image";
+import { useSound } from "@/hooks/use-sound";
 
-const ALL_TAGS = ["All", "Flutter", "Next.js", "React", "AI", "PostgreSQL", "Supabase", "Firebase", "InsForge"];
 
 export function Projects() {
   const [filter, setFilter] = useState("All");
@@ -18,6 +18,7 @@ export function Projects() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { playHover, playClick } = useSound();
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -40,6 +41,8 @@ export function Projects() {
   const filteredProjects = projects.filter(
     project => filter === "All" || project.tags?.includes(filter)
   );
+
+  const dynamicTags = ["All", ...Array.from(new Set(projects.flatMap(p => p.tags || [])))];
 
   const openGallery = (project: Project) => {
     setSelectedProject(project);
@@ -82,10 +85,14 @@ export function Projects() {
 
       {/* Filter Bar */}
       <div className="flex flex-wrap justify-center gap-2 mb-12">
-        {ALL_TAGS.map((tag) => (
+        {dynamicTags.map((tag) => (
           <button
             key={tag}
-            onClick={() => setFilter(tag)}
+            onClick={() => {
+              playClick();
+              setFilter(tag);
+            }}
+            onMouseEnter={playHover}
             className={`px-4 py-2 text-sm font-medium transition-colors border-2 ${
               filter === tag
                 ? "bg-primary text-primary-foreground border-black shadow-[4px_4px_0_0_#000]"
@@ -114,10 +121,16 @@ export function Projects() {
                 transition={{ duration: 0.3 }}
                 className="h-full group"
               >
-                <div className="flex flex-col h-full bg-card border-2 border-primary shadow-[6px_6px_0_0_#000] hover:-translate-y-1 hover:shadow-[10px_10px_0_0_#000] transition-all">
+                <div 
+                  className="flex flex-col h-full bg-card border-2 border-primary shadow-[6px_6px_0_0_#000] hover:-translate-y-1 hover:shadow-[10px_10px_0_0_#000] transition-all"
+                  onMouseEnter={playHover}
+                >
                   <div 
                     className="relative h-48 overflow-hidden border-b-2 border-primary cursor-pointer"
-                    onClick={() => openGallery(project)}
+                    onClick={() => {
+                      playClick();
+                      openGallery(project);
+                    }}
                   >
                     {project.cover_image && (
                       <div className="absolute inset-0 bg-muted">
