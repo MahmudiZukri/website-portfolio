@@ -49,7 +49,7 @@ export function About() {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="space-y-6 text-zinc-400 text-lg leading-relaxed flex flex-col items-center md:items-start"
+          className="space-y-6 text-foreground/80 text-lg leading-relaxed flex flex-col items-center md:items-start"
         >
           <div className="relative w-48 h-48 mb-4 border-4 border-primary shadow-[6px_6px_0_0_#000] overflow-hidden bg-card flex items-center justify-center">
             {avatar ? (

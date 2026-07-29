@@ -19,14 +19,14 @@ export function MobileNav() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger 
-        render={<Button variant="ghost" size="icon" className="text-zinc-400" />}
+        render={<Button variant="ghost" size="icon" className="text-foreground" />}
       >
         <Menu className="h-6 w-6" />
         <span className="sr-only">Toggle menu</span>
       </SheetTrigger>
-      <SheetContent side="right" className="bg-zinc-950 border-zinc-800">
+      <SheetContent side="right" className="bg-background border-primary">
         <SheetHeader>
-          <SheetTitle className="text-left text-zinc-100 font-bold">Navigation</SheetTitle>
+          <SheetTitle className="text-left text-foreground font-bold">Navigation</SheetTitle>
         </SheetHeader>
         <div className="flex flex-col space-y-4 mt-8">
           {siteConfig.navItems.map((item) => (
@@ -34,7 +34,7 @@ export function MobileNav() {
               key={item.href}
               href={item.href}
               onClick={() => setOpen(false)}
-              className="text-lg font-medium text-zinc-400 hover:text-zinc-100 transition-colors"
+              className="text-lg font-medium text-foreground/80 hover:text-foreground transition-colors"
             >
               {item.name}
             </Link>
