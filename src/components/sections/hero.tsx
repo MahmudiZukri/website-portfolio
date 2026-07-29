@@ -8,9 +8,11 @@ import Link from "next/link";
 
 import { useState, useEffect } from "react";
 import { insforge } from "@/lib/insforge";
+import { useSound } from "@/hooks/use-sound";
 
 export function Hero() {
   const [resumeUrl, setResumeUrl] = useState<string | null>(siteConfig.resumeUrl || null);
+  const { playHover, playClick } = useSound();
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -30,10 +32,6 @@ export function Hero() {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
-      {/* Animated Background Mesh */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#A27B5C_1px,transparent_1px)] [background-size:24px_24px]" />
-      </div>
 
       <div className="container px-4 md:px-8 relative z-10 flex flex-col items-center text-center">
         <motion.div
@@ -48,17 +46,28 @@ export function Hero() {
         </motion.div>
 
         <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: { staggerChildren: 0.15, delayChildren: 0.1 }
+            }
+          }}
+          initial="hidden"
+          animate="visible"
+          className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 flex flex-wrap justify-center items-center gap-x-3 gap-y-2 md:gap-x-4"
         >
-          Hi, I&apos;m{" "}
-          <span className="text-primary">
+          <motion.span variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120 } } }}>Hi,</motion.span>
+          <motion.span variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120 } } }}>I&apos;m</motion.span>
+          <motion.span variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120 } } }} className="text-primary">
             {siteConfig.shortName}
-          </span>
-          <br className="hidden md:block" />
-          <span className="text-foreground"> {siteConfig.title}</span>
+          </motion.span>
+          <div className="basis-full h-0 hidden md:block" />
+          {siteConfig.title.split(" ").map((word, i) => (
+            <motion.span key={i} variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120 } } }} className="text-foreground">
+              {word}
+            </motion.span>
+          ))}
         </motion.h1>
 
         <motion.p
@@ -77,7 +86,12 @@ export function Hero() {
           className="flex flex-col sm:flex-row items-center gap-4"
         >
           <Link href="#projects">
-            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground min-w-[160px] border-2 border-black shadow-[4px_4px_0_0_#000] rounded-none active:translate-y-1 active:shadow-none transition-all">
+            <Button 
+              size="lg" 
+              className="bg-primary hover:bg-primary/90 text-primary-foreground min-w-[160px] border-2 border-black shadow-[4px_4px_0_0_#000] rounded-none active:translate-y-1 active:shadow-none transition-all"
+              onMouseEnter={playHover}
+              onClick={playClick}
+            >
               View Projects
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
@@ -85,7 +99,13 @@ export function Hero() {
           
           {resumeUrl && (
             <a href={resumeUrl} target="_blank" rel="noopener noreferrer">
-              <Button size="lg" variant="outline" className="bg-card hover:bg-primary/20 text-card-foreground min-w-[160px] border-2 border-primary shadow-[4px_4px_0_0_#000] rounded-none active:translate-y-1 active:shadow-none transition-all">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="bg-card hover:bg-primary/20 text-card-foreground min-w-[160px] border-2 border-primary shadow-[4px_4px_0_0_#000] rounded-none active:translate-y-1 active:shadow-none transition-all"
+                onMouseEnter={playHover}
+                onClick={playClick}
+              >
                 Download Resume
               </Button>
             </a>

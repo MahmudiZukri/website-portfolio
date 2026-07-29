@@ -36,6 +36,10 @@ export const metadata: Metadata = {
 };
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { Preloader } from "@/components/ui/preloader";
+import { CustomCursor } from "@/components/ui/custom-cursor";
+import { BackToTop } from "@/components/ui/back-to-top";
+import { ParallaxBg } from "@/components/ui/parallax-bg";
 
 export default function RootLayout({
   children,
@@ -48,14 +52,38 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${pixelifySans.variable} h-full antialiased`}
     >
-      <body suppressHydrationWarning className="min-h-full flex flex-col bg-background text-foreground font-sans transition-colors duration-300">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Person",
+              name: siteConfig.name,
+              url: siteConfig.url,
+              jobTitle: siteConfig.title,
+              description: siteConfig.bio,
+              sameAs: [
+                siteConfig.social.github,
+                siteConfig.social.linkedin,
+                siteConfig.social.twitter
+              ].filter(Boolean)
+            })
+          }}
+        />
+      </head>
+      <body suppressHydrationWarning className="min-h-full flex flex-col bg-transparent text-foreground font-sans transition-colors duration-300">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
           enableSystem
         >
+          <ParallaxBg />
+          <Preloader />
+          <CustomCursor />
           {children}
           <AiChat />
+          <BackToTop />
           <Toaster position="bottom-right" />
         </ThemeProvider>
       </body>
