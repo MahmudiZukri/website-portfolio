@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, LogOut, Plus, Save } from "lucide-react";
+import { Loader2, LogOut, Plus, Save, GripVertical } from "lucide-react";
+import { Reorder } from "framer-motion";
 import { toast } from "sonner";
 import { SingleImageUpload, MultiImageUpload } from "@/components/ui/image-upload";
 import { SingleFileUpload } from "@/components/ui/file-upload";
@@ -31,6 +32,8 @@ export default function AdminDashboard() {
   const [newProjectCover, setNewProjectCover] = useState("");
   const [newProjectImages, setNewProjectImages] = useState<string[]>([]);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [isOrderDirty, setIsOrderDirty] = useState(false);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
 
   // States for Add/Edit Experience
   const [isAddExperienceOpen, setIsAddExperienceOpen] = useState(false);
@@ -78,8 +81,11 @@ export default function AdminDashboard() {
   }, [router]);
 
   const fetchProjects = async () => {
-    const { data, error } = await insforge.database.from("projects").select("*").order("created_at", { ascending: false });
-    if (!error && data) setProjects(data);
+    const { data, error } = await insforge.database.from("projects").select("*").order("order_index", { ascending: true }).order("created_at", { ascending: false });
+    if (!error && data) {
+      setProjects(data);
+      setIsOrderDirty(false);
+    }
   };
 
   const fetchMessages = async () => {
@@ -125,12 +131,12 @@ export default function AdminDashboard() {
     const images = imagesString ? imagesString.split(",").map(i => i.trim()).filter(Boolean) : null;
     const tagsString = formData.get("tags") as string;
     const tags = tagsString ? tagsString.split(",").map(t => t.trim()).filter(Boolean) : [];
-    const featured = formData.get("featured") === "on";
     const is_published = formData.get("is_published") === "on";
+    const order_index = projects.length;
 
     try {
       const { error } = await insforge.database.from("projects").insert([{
-        title, slug, description, content, demo_url, github_url, cover_image, images, tags, featured, is_published
+        title, slug, description, content, demo_url, github_url, cover_image, images, tags, order_index, is_published
       }]);
 
       if (error) throw error;
@@ -219,12 +225,11 @@ export default function AdminDashboard() {
     const images = imagesString ? imagesString.split(",").map(i => i.trim()).filter(Boolean) : null;
     const tagsString = formData.get("tags") as string;
     const tags = tagsString ? tagsString.split(",").map(t => t.trim()).filter(Boolean) : [];
-    const featured = formData.get("featured") === "on";
     const is_published = formData.get("is_published") === "on";
 
     try {
       const { error } = await insforge.database.from("projects").update({
-        title, slug, description, content, demo_url, github_url, cover_image, images, tags, featured, is_published
+        title, slug, description, content, demo_url, github_url, cover_image, images, tags, is_published
       }).eq("id", editingProject.id);
 
       if (error) throw error;
@@ -248,6 +253,24 @@ export default function AdminDashboard() {
       fetchProjects();
     } catch (err: any) {
       toast.error(err.message || "Failed to delete project");
+    }
+  };
+
+  const handleSaveOrder = async () => {
+    setIsSavingOrder(true);
+    try {
+      await Promise.all(
+        projects.map((p, index) => 
+          insforge.database.from("projects").update({ order_index: index }).eq("id", p.id)
+        )
+      );
+      toast.success("Order saved successfully!");
+      setIsOrderDirty(false);
+      fetchProjects();
+    } catch (err: any) {
+      toast.error("Failed to save order");
+    } finally {
+      setIsSavingOrder(false);
     }
   };
 
@@ -466,10 +489,7 @@ export default function AdminDashboard() {
                     <MultiImageUpload name="images" value={newProjectImages} onChange={setNewProjectImages} />
                   </div>
                   
-                  <div className="flex items-center space-x-2 pt-2">
-                    <input type="checkbox" name="featured" id="featured" className="w-4 h-4 rounded-none border-2 border-primary accent-primary" />
-                    <label htmlFor="featured" className="text-sm font-bold text-foreground">Feature this project?</label>
-                  </div>
+
 
                   <div className="flex items-center space-x-2 pt-2">
                     <input type="checkbox" name="is_published" id="is_published" defaultChecked className="w-4 h-4 rounded-none border-2 border-primary accent-primary" />
@@ -487,18 +507,31 @@ export default function AdminDashboard() {
               </DialogContent>
             </Dialog>
           </div>
+          {isOrderDirty && (
+            <div className="flex justify-end mb-4">
+              <Button onClick={handleSaveOrder} disabled={isSavingOrder} className="bg-primary hover:bg-primary/90 text-primary-foreground border-2 border-black rounded-none shadow-[4px_4px_0_0_#000] active:translate-y-1 active:shadow-none transition-all">
+                {isSavingOrder ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                Save New Order
+              </Button>
+            </div>
+          )}
           {projects.length === 0 ? (
             <p className="text-foreground/60 font-bold">No projects found. Add one to get started.</p>
           ) : (
-            <div className="grid gap-4">
+            <Reorder.Group axis="y" values={projects} onReorder={(newOrder) => { setProjects(newOrder); setIsOrderDirty(true); }} className="grid gap-4">
               {projects.map((proj) => (
-                <div key={proj.id} className={`p-4 border-2 border-primary shadow-[4px_4px_0_0_#000] flex justify-between items-center ${proj.is_published ? 'bg-card' : 'bg-background opacity-80'}`}>
-                  <div>
-                    <div className="flex items-center gap-3">
-                      <h3 className="font-bold text-foreground text-lg">{proj.title}</h3>
-                      {!proj.is_published && <span className="px-2 py-0.5 bg-zinc-800 text-zinc-300 text-xs font-bold uppercase border border-zinc-600 rounded-sm">Draft</span>}
+                <Reorder.Item key={proj.id} value={proj} className={`p-4 border-2 border-primary shadow-[4px_4px_0_0_#000] flex justify-between items-center ${proj.is_published ? 'bg-card' : 'bg-background opacity-80'}`}>
+                  <div className="flex items-center gap-4">
+                    <div className="cursor-grab active:cursor-grabbing">
+                      <GripVertical className="w-6 h-6 text-foreground/50 hover:text-foreground transition-colors" />
                     </div>
-                    <p className="text-sm text-primary mb-2 font-bold">{proj.slug}</p>
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <h3 className="font-bold text-foreground text-lg">{proj.title}</h3>
+                        {!proj.is_published && <span className="px-2 py-0.5 bg-zinc-800 text-zinc-300 text-xs font-bold uppercase border border-zinc-600 rounded-sm">Draft</span>}
+                      </div>
+                      <p className="text-sm text-primary mb-2 font-bold">{proj.slug}</p>
+                    </div>
                   </div>
                   <div className="space-x-2 flex items-center">
                     <Dialog open={editingProject?.id === proj.id} onOpenChange={(open) => !open && setEditingProject(null)}>
@@ -566,10 +599,7 @@ export default function AdminDashboard() {
                               />
                             </div>
                             
-                            <div className="flex items-center space-x-2 pt-2">
-                              <input type="checkbox" name="featured" id={`featured-${editingProject.id}`} defaultChecked={editingProject.featured} className="w-4 h-4 rounded-none border-2 border-primary accent-primary" />
-                              <label htmlFor={`featured-${editingProject.id}`} className="text-sm font-bold text-foreground">Feature this project?</label>
-                            </div>
+
 
                             <div className="flex items-center space-x-2 pt-2">
                               <input type="checkbox" name="is_published" id={`is_published-${editingProject.id}`} defaultChecked={editingProject.is_published} className="w-4 h-4 rounded-none border-2 border-primary accent-primary" />
@@ -589,9 +619,9 @@ export default function AdminDashboard() {
                     </Dialog>
                     <Button variant="destructive" size="sm" onClick={() => handleDeleteProject(proj.id)} className="border-2 border-destructive rounded-none shadow-[2px_2px_0_0_#000] active:translate-y-px active:shadow-none">Delete</Button>
                   </div>
-                </div>
+                </Reorder.Item>
               ))}
-            </div>
+            </Reorder.Group>
           )}
         </TabsContent>
 

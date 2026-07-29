@@ -22,7 +22,7 @@ export type Database = {
           demo_url: string | null;
           github_url: string | null;
           tags: string[];
-          featured: boolean;
+          order_index: number;
           is_published: boolean;
           created_at: string;
         };
