@@ -107,3 +107,34 @@
     scroll-behavior: smooth;
   }
 }
+
+@layer utilities {
+  ::selection {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  ::-webkit-scrollbar {
+    width: 14px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--background);
+    border-left: 2px solid var(--border);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border: 2px solid var(--background);
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--foreground);
+  }
+
+  @media (pointer: fine) {
+    body, a, button, input, textarea, select {
+      cursor: none !important;
+    }
+  }
+}
