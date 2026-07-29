@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, LogOut, Plus, Save, GripVertical } from "lucide-react";
 import { Reorder } from "framer-motion";
 import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
 import { SingleImageUpload, MultiImageUpload } from "@/components/ui/image-upload";
 import { SingleFileUpload } from "@/components/ui/file-upload";
 
@@ -31,6 +32,7 @@ export default function AdminDashboard() {
   const [isAddingProject, setIsAddingProject] = useState(false);
   const [newProjectCover, setNewProjectCover] = useState("");
   const [newProjectImages, setNewProjectImages] = useState<string[]>([]);
+  const [newProjectContent, setNewProjectContent] = useState("");
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [isOrderDirty, setIsOrderDirty] = useState(false);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
@@ -432,12 +434,13 @@ export default function AdminDashboard() {
               if (!open) {
                 setNewProjectCover("");
                 setNewProjectImages([]);
+                setNewProjectContent("");
               }
             }}>
               <DialogTrigger className="inline-flex items-center justify-center h-10 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground border-2 border-black rounded-none shadow-[4px_4px_0_0_#000] active:translate-y-1 active:shadow-none transition-all font-medium text-sm">
                 <Plus className="w-4 h-4 mr-2" /> Add Project
               </DialogTrigger>
-              <DialogContent className="max-w-2xl bg-card border-2 border-primary shadow-[8px_8px_0_0_#000] rounded-none max-h-[90vh] overflow-y-auto">
+              <DialogContent className="max-w-5xl bg-card border-2 border-primary shadow-[8px_8px_0_0_#000] rounded-none max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle className="text-xl font-bold text-foreground">Add New Project</DialogTitle>
                 </DialogHeader>
@@ -459,8 +462,13 @@ export default function AdminDashboard() {
                   </div>
                   
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-primary uppercase tracking-wider">Content (Optional)</label>
-                    <Textarea name="content" className="bg-background border-2 border-primary rounded-none focus-visible:ring-0 focus-visible:border-black shadow-[2px_2px_0_0_#000] min-h-[100px]" placeholder="Detailed explanation..." />
+                    <label className="text-sm font-bold text-primary uppercase tracking-wider">Content (Markdown)</label>
+                    <div className="grid grid-cols-2 gap-4 h-[300px]">
+                      <Textarea name="content" value={newProjectContent} onChange={(e) => setNewProjectContent(e.target.value)} className="bg-background border-2 border-primary rounded-none focus-visible:ring-0 focus-visible:border-black shadow-[2px_2px_0_0_#000] h-full resize-none font-mono text-sm p-4" placeholder="# My Project\n\nDetailed explanation..." />
+                      <div className="bg-background border-2 border-primary shadow-[2px_2px_0_0_#000] h-full overflow-y-auto p-4 prose prose-zinc dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-primary prose-a:font-bold">
+                        {newProjectContent ? <ReactMarkdown>{newProjectContent}</ReactMarkdown> : <span className="text-muted-foreground/50 italic">Live preview...</span>}
+                      </div>
+                    </div>
                   </div>
                   
                   <div className="space-y-2">
@@ -538,7 +546,7 @@ export default function AdminDashboard() {
                       <DialogTrigger onClick={() => setEditingProject(proj)} className="inline-flex items-center justify-center h-9 px-3 bg-card text-card-foreground border-2 border-primary rounded-none shadow-[2px_2px_0_0_#000] hover:bg-primary/20 active:translate-y-px active:shadow-none font-medium text-sm">
                         Edit
                       </DialogTrigger>
-                      <DialogContent className="max-w-2xl bg-card border-2 border-primary shadow-[8px_8px_0_0_#000] rounded-none max-h-[90vh] overflow-y-auto">
+                      <DialogContent className="max-w-5xl bg-card border-2 border-primary shadow-[8px_8px_0_0_#000] rounded-none max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle className="text-xl font-bold text-foreground">Edit Project</DialogTitle>
                         </DialogHeader>
@@ -561,8 +569,13 @@ export default function AdminDashboard() {
                             </div>
                             
                             <div className="space-y-2">
-                              <label className="text-sm font-bold text-primary uppercase tracking-wider">Content (Optional)</label>
-                              <Textarea name="content" defaultValue={editingProject.content || ""} className="bg-background border-2 border-primary rounded-none focus-visible:ring-0 focus-visible:border-black shadow-[2px_2px_0_0_#000] min-h-[100px]" />
+                              <label className="text-sm font-bold text-primary uppercase tracking-wider">Content (Markdown)</label>
+                              <div className="grid grid-cols-2 gap-4 h-[300px]">
+                                <Textarea name="content" value={editingProject.content || ""} onChange={(e) => setEditingProject({...editingProject, content: e.target.value})} className="bg-background border-2 border-primary rounded-none focus-visible:ring-0 focus-visible:border-black shadow-[2px_2px_0_0_#000] h-full resize-none font-mono text-sm p-4" />
+                                <div className="bg-background border-2 border-primary shadow-[2px_2px_0_0_#000] h-full overflow-y-auto p-4 prose prose-zinc dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-primary prose-a:font-bold">
+                                  {editingProject.content ? <ReactMarkdown>{editingProject.content}</ReactMarkdown> : <span className="text-muted-foreground/50 italic">Live preview...</span>}
+                                </div>
+                              </div>
                             </div>
                             
                             <div className="space-y-2">
