@@ -84,34 +84,52 @@ export function About() {
               <div className="space-y-8">
                 <div>
                   <h4 className="text-sm font-bold text-primary mb-4 uppercase tracking-wider">Frontend</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {frontendSkills.map((skill) => (
-                      <span key={skill.id} className="px-3 py-1 bg-background text-foreground border-2 border-primary shadow-[2px_2px_0_0_#A27B5C] text-sm font-bold">
-                        {skill.name}
-                      </span>
-                    ))}
+                  <div className="relative overflow-hidden flex w-full group">
+                    <motion.div
+                      className="flex gap-4 whitespace-nowrap min-w-max py-2"
+                      animate={{ x: ["0%", "-50%"] }}
+                      transition={{ ease: "linear", duration: 15, repeat: Infinity }}
+                    >
+                      {[...frontendSkills, ...frontendSkills, ...frontendSkills, ...frontendSkills].map((skill, idx) => (
+                        <span key={`${skill.id}-${idx}`} className="px-4 py-2 bg-background text-foreground border-2 border-primary shadow-[2px_2px_0_0_#000] text-sm font-bold">
+                          {skill.name}
+                        </span>
+                      ))}
+                    </motion.div>
                   </div>
                 </div>
 
                 <div>
                   <h4 className="text-sm font-bold text-primary mb-4 uppercase tracking-wider">Backend</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {backendSkills.map((skill) => (
-                      <span key={skill.id} className="px-3 py-1 bg-background text-foreground border-2 border-primary shadow-[2px_2px_0_0_#A27B5C] text-sm font-bold">
-                        {skill.name}
-                      </span>
-                    ))}
+                  <div className="relative overflow-hidden flex w-full group">
+                    <motion.div
+                      className="flex gap-4 whitespace-nowrap min-w-max py-2"
+                      animate={{ x: ["-50%", "0%"] }}
+                      transition={{ ease: "linear", duration: 15, repeat: Infinity }}
+                    >
+                      {[...backendSkills, ...backendSkills, ...backendSkills, ...backendSkills].map((skill, idx) => (
+                        <span key={`${skill.id}-${idx}`} className="px-4 py-2 bg-background text-foreground border-2 border-primary shadow-[2px_2px_0_0_#000] text-sm font-bold">
+                          {skill.name}
+                        </span>
+                      ))}
+                    </motion.div>
                   </div>
                 </div>
 
                 <div>
                   <h4 className="text-sm font-bold text-primary mb-4 uppercase tracking-wider">Tools & Others</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {toolSkills.map((skill) => (
-                      <span key={skill.id} className="px-3 py-1 bg-background text-foreground border-2 border-primary shadow-[2px_2px_0_0_#A27B5C] text-sm font-bold">
-                        {skill.name}
-                      </span>
-                    ))}
+                  <div className="relative overflow-hidden flex w-full group">
+                    <motion.div
+                      className="flex gap-4 whitespace-nowrap min-w-max py-2"
+                      animate={{ x: ["0%", "-50%"] }}
+                      transition={{ ease: "linear", duration: 15, repeat: Infinity }}
+                    >
+                      {[...toolSkills, ...toolSkills, ...toolSkills, ...toolSkills].map((skill, idx) => (
+                        <span key={`${skill.id}-${idx}`} className="px-4 py-2 bg-background text-foreground border-2 border-primary shadow-[2px_2px_0_0_#000] text-sm font-bold">
+                          {skill.name}
+                        </span>
+                      ))}
+                    </motion.div>
                   </div>
                 </div>
               </div>
