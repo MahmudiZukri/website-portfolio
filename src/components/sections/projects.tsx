@@ -25,6 +25,7 @@ export function Projects() {
         .from("projects")
         .select("*")
         .eq("is_published", true)
+        .order("featured", { ascending: false, nullsFirst: false })
         .order("created_at", { ascending: false });
         
       if (!error && data) {
@@ -129,6 +130,12 @@ export function Projects() {
                       </div>
                     )}
                     <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {/* Featured Badge */}
+                    {project.featured && (
+                      <div className="absolute top-2 left-2 bg-[#F39C12] text-white px-2 py-1 text-xs font-bold border-2 border-primary shadow-[2px_2px_0_0_#000] z-10">
+                        ★ Featured
+                      </div>
+                    )}
                     {/* Gallery indicator */}
                     {project.images && project.images.length > 0 && (
                       <div className="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 text-xs font-bold flex items-center gap-1 border border-white/30">
@@ -155,7 +162,11 @@ export function Projects() {
                         <a href={project.demo_url} target="_blank" rel="noreferrer">
                           <Button variant="default" size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 border-2 border-black rounded-none shadow-[2px_2px_0_0_#000] active:translate-y-px active:shadow-none">
                             <ExternalLink className="w-4 h-4 mr-2" />
-                            {project.demo_url.includes('play.google.com') ? 'Play Store' : 'View Demo'}
+                            {project.demo_url.includes('play.google.com') 
+                              ? 'Play Store' 
+                              : project.demo_url.includes('apps.apple.com') 
+                                ? 'App Store' 
+                                : 'Visit Website'}
                           </Button>
                         </a>
                       )}
@@ -282,7 +293,11 @@ export function Projects() {
                       <a href={selectedProject.demo_url} target="_blank" rel="noreferrer">
                         <Button variant="default" size="default" className="bg-primary text-primary-foreground hover:bg-primary/90 border-2 border-black rounded-none shadow-[2px_2px_0_0_#000] active:translate-y-px active:shadow-none">
                           <ExternalLink className="w-4 h-4 mr-2" />
-                          {selectedProject.demo_url.includes('play.google.com') ? 'Play Store' : 'View Live Demo'}
+                          {selectedProject.demo_url.includes('play.google.com') 
+                            ? 'Play Store' 
+                            : selectedProject.demo_url.includes('apps.apple.com') 
+                              ? 'App Store' 
+                              : 'Visit Website'}
                         </Button>
                       </a>
                     )}
