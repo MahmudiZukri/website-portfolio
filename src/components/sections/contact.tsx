@@ -24,12 +24,33 @@ export function Contact() {
     const message = formData.get("message") as string;
 
     try {
+      // 1. Save to database as a backup
       const { error } = await insforge.database
         .from("contact_submissions")
         .insert([{ name, email, message }]);
 
       if (error) {
         throw error;
+      }
+
+      // 2. Send email notification via Web3Forms if key exists
+      const web3FormsKey = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
+      if (web3FormsKey) {
+        await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            access_key: web3FormsKey,
+            subject: `New Portfolio Contact from ${name}`,
+            from_name: "Portfolio Contact Form",
+            name,
+            email,
+            message,
+          }),
+        }).catch(err => console.error("Web3Forms error:", err)); // Don't crash if email fails
       }
 
       toast.success("Message sent successfully! I'll get back to you soon.");
