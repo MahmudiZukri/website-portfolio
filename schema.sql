@@ -10,6 +10,7 @@ CREATE TABLE public.projects (
   github_url TEXT,
   tags TEXT[] DEFAULT '{}',
   featured BOOLEAN DEFAULT false,
+  is_published BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

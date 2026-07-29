@@ -24,6 +24,7 @@ export function Projects() {
       const { data, error } = await insforge.database
         .from("projects")
         .select("*")
+        .eq("is_published", true)
         .order("created_at", { ascending: false });
         
       if (!error && data) {
@@ -118,7 +119,7 @@ export function Projects() {
                     onClick={() => openGallery(project)}
                   >
                     {project.cover_image && (
-                      <div className="absolute inset-0 bg-zinc-800">
+                      <div className="absolute inset-0 bg-muted">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={project.cover_image} 
@@ -175,88 +176,138 @@ export function Projects() {
         </motion.div>
       )}
 
-      {/* Gallery Lightbox Modal */}
+      {/* Project Details Modal */}
       <AnimatePresence>
-        {selectedProject && selectedImages.length > 0 && (
+        {selectedProject && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 overflow-y-auto"
             onClick={closeGallery}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative w-full max-w-4xl max-h-[90vh] flex flex-col"
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative w-full max-w-6xl bg-card border-2 border-primary shadow-[8px_8px_0_0_#000] my-8 flex flex-col md:max-h-[90vh]"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <h3 className="text-white font-bold text-xl">{selectedProject.title}</h3>
-                  <p className="text-white/60 text-sm">
-                    {currentImageIndex + 1} / {selectedImages.length}
-                  </p>
-                </div>
+              <div className="flex justify-between items-center p-4 border-b-2 border-primary bg-background sticky top-0 z-10">
+                <h3 className="text-xl md:text-2xl font-bold text-foreground line-clamp-1">{selectedProject.title}</h3>
                 <button
                   onClick={closeGallery}
-                  className="bg-white/10 hover:bg-white/20 text-white p-2 border-2 border-white/30 transition-colors"
+                  className="bg-card hover:bg-primary/20 text-foreground p-2 border-2 border-primary shadow-[2px_2px_0_0_#000] active:translate-y-px active:shadow-none transition-all ml-4 flex-shrink-0"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Main Image */}
-              <div className="relative flex-1 min-h-0 bg-black/50 border-2 border-white/20 shadow-[8px_8px_0_0_rgba(255,255,255,0.1)]">
-                <div className="relative w-full h-[60vh]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={selectedImages[currentImageIndex]}
-                    alt={`${selectedProject.title} - Image ${currentImageIndex + 1}`}
-                    className="w-full h-full object-contain"
-                  />
+              {/* Content area */}
+              <div className="flex flex-col md:flex-row flex-1 overflow-y-auto">
+                {/* Left column: Image Gallery */}
+                <div className="w-full md:w-1/2 p-4 md:p-6 border-b-2 md:border-b-0 md:border-r-2 border-primary bg-background">
+                  {selectedImages.length > 0 ? (
+                    <div className="flex flex-col h-full">
+                      <div className="relative w-full aspect-video bg-card border-2 border-primary shadow-[4px_4px_0_0_#000] mb-4 overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={selectedImages[currentImageIndex]}
+                          alt={`${selectedProject.title} - Image ${currentImageIndex + 1}`}
+                          className="w-full h-full object-contain"
+                        />
+                        {/* Navigation Arrows */}
+                        {selectedImages.length > 1 && (
+                          <>
+                            <button
+                              onClick={prevImage}
+                              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/90 text-white p-2 border-2 border-primary transition-colors"
+                            >
+                              <ChevronLeft className="w-6 h-6" />
+                            </button>
+                            <button
+                              onClick={nextImage}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/90 text-white p-2 border-2 border-primary transition-colors"
+                            >
+                              <ChevronRight className="w-6 h-6" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                      
+                      {/* Thumbnail Strip */}
+                      {selectedImages.length > 1 && (
+                        <div className="flex gap-2 overflow-x-auto pb-2">
+                          {selectedImages.map((img, index) => (
+                            <button
+                              key={index}
+                              onClick={() => setCurrentImageIndex(index)}
+                              className={`relative w-16 h-16 flex-shrink-0 border-2 transition-all ${
+                                index === currentImageIndex
+                                  ? "border-primary shadow-[2px_2px_0_0_#000] opacity-100"
+                                  : "border-primary/50 opacity-50 hover:opacity-100"
+                              }`}
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={img} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="w-full h-full min-h-[300px] flex items-center justify-center bg-card border-2 border-primary shadow-[4px_4px_0_0_#000] text-muted-foreground">
+                      No images available
+                    </div>
+                  )}
                 </div>
 
-                {/* Navigation Arrows */}
-                {selectedImages.length > 1 && (
-                  <>
-                    <button
-                      onClick={prevImage}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/90 text-white p-2 border-2 border-white/30 transition-colors"
-                    >
-                      <ChevronLeft className="w-6 h-6" />
-                    </button>
-                    <button
-                      onClick={nextImage}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/90 text-white p-2 border-2 border-white/30 transition-colors"
-                    >
-                      <ChevronRight className="w-6 h-6" />
-                    </button>
-                  </>
-                )}
+                {/* Right column: Details and Content */}
+                <div className="w-full md:w-1/2 p-4 md:p-6 bg-card flex flex-col">
+                  <p className="text-lg text-foreground/80 font-medium mb-6">
+                    {selectedProject.description}
+                  </p>
+                  
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {selectedProject.tags?.map((tag) => (
+                      <Badge key={tag} variant="secondary" className="bg-background text-foreground border-2 border-primary shadow-[2px_2px_0_0_#000] rounded-none">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                  
+                  <div className="flex flex-wrap items-center gap-4 mb-8 pb-6 border-b-2 border-primary/30">
+                    {selectedProject.demo_url && (
+                      <a href={selectedProject.demo_url} target="_blank" rel="noreferrer">
+                        <Button variant="default" size="default" className="bg-primary text-primary-foreground hover:bg-primary/90 border-2 border-black rounded-none shadow-[2px_2px_0_0_#000] active:translate-y-px active:shadow-none">
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          {selectedProject.demo_url.includes('play.google.com') ? 'Play Store' : 'View Live Demo'}
+                        </Button>
+                      </a>
+                    )}
+                    {selectedProject.github_url && (
+                      <a href={selectedProject.github_url} target="_blank" rel="noreferrer">
+                        <Button variant="outline" size="default" className="bg-background text-foreground border-2 border-primary hover:bg-primary/20 rounded-none shadow-[2px_2px_0_0_#000] active:translate-y-px active:shadow-none">
+                          <FaGithub className="w-4 h-4 mr-2" />
+                          Source Code
+                        </Button>
+                      </a>
+                    )}
+                  </div>
+
+                  {selectedProject.content ? (
+                    <div 
+                      className="prose prose-zinc dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-primary prose-a:font-bold prose-img:border-2 prose-img:border-primary prose-img:shadow-[4px_4px_0_0_#000]"
+                      dangerouslySetInnerHTML={{ __html: selectedProject.content }}
+                    />
+                  ) : (
+                    <div className="text-center py-12 text-muted-foreground border-2 border-dashed border-primary bg-background">
+                      No detailed case study available for this project.
+                    </div>
+                  )}
+                </div>
               </div>
-
-              {/* Thumbnail Strip */}
-              {selectedImages.length > 1 && (
-                <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
-                  {selectedImages.map((img, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentImageIndex(index)}
-                      className={`relative w-16 h-16 flex-shrink-0 border-2 transition-all ${
-                        index === currentImageIndex
-                          ? "border-primary shadow-[3px_3px_0_0_hsl(var(--primary))] opacity-100"
-                          : "border-white/30 opacity-50 hover:opacity-80"
-                      }`}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={img} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
-              )}
             </motion.div>
           </motion.div>
         )}

@@ -6,7 +6,28 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
+import { useState, useEffect } from "react";
+import { insforge } from "@/lib/insforge";
+
 export function Hero() {
+  const [resumeUrl, setResumeUrl] = useState<string | null>(siteConfig.resumeUrl || null);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const { data } = await insforge.database
+        .from("site_settings")
+        .select("resume_url")
+        .limit(1)
+        .single();
+        
+      if (data?.resume_url) {
+        setResumeUrl(data.resume_url);
+      }
+    };
+    
+    fetchSettings();
+  }, []);
+
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
       {/* Animated Background Mesh */}
@@ -44,7 +65,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="max-w-2xl text-lg md:text-xl text-zinc-400 mb-10"
+          className="max-w-2xl text-lg md:text-xl text-muted-foreground mb-10"
         >
           {siteConfig.bio}
         </motion.p>
@@ -61,6 +82,14 @@ export function Hero() {
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
+          
+          {resumeUrl && (
+            <a href={resumeUrl} target="_blank" rel="noopener noreferrer">
+              <Button size="lg" variant="outline" className="bg-card hover:bg-primary/20 text-card-foreground min-w-[160px] border-2 border-primary shadow-[4px_4px_0_0_#000] rounded-none active:translate-y-1 active:shadow-none transition-all">
+                Download Resume
+              </Button>
+            </a>
+          )}
         </motion.div>
       </div>
     </section>

@@ -23,6 +23,7 @@ export type Database = {
           github_url: string | null;
           tags: string[];
           featured: boolean;
+          is_published: boolean;
           created_at: string;
         };
         Insert: Omit<Database['public']['Tables']['projects']['Row'], 'id' | 'created_at'>;
@@ -43,6 +44,7 @@ export type Database = {
         Row: {
           id: string;
           avatar_url: string | null;
+          resume_url: string | null;
         };
         Insert: Omit<Database['public']['Tables']['site_settings']['Row'], 'id'>;
         Update: Partial<Database['public']['Tables']['site_settings']['Insert']>;

@@ -3,6 +3,8 @@ export const siteConfig = {
   shortName: "Mahmudi Zukri",
   title: "AI Engineer & Full-Stack Developer",
   bio: "I am an AI Engineer and Full-Stack Developer with a deep specialization in Mobile. While my core expertise lies in building intelligent mobile applications using Flutter, I also craft modern web experiences and architect robust backends using BaaS platforms like Supabase, Firebase, and InsForge.",
+  url: "https://mahmudizukri-portfolio.web.app",
+  resumeUrl: "",
   avatarUrl: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&q=80&w=200&h=200",
   
   social: {

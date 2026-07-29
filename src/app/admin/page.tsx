@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, LogOut, Plus, Save } from "lucide-react";
 import { toast } from "sonner";
 import { SingleImageUpload, MultiImageUpload } from "@/components/ui/image-upload";
+import { SingleFileUpload } from "@/components/ui/file-upload";
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -125,10 +126,11 @@ export default function AdminDashboard() {
     const tagsString = formData.get("tags") as string;
     const tags = tagsString ? tagsString.split(",").map(t => t.trim()).filter(Boolean) : [];
     const featured = formData.get("featured") === "on";
+    const is_published = formData.get("is_published") === "on";
 
     try {
       const { error } = await insforge.database.from("projects").insert([{
-        title, slug, description, content, demo_url, github_url, cover_image, images, tags, featured
+        title, slug, description, content, demo_url, github_url, cover_image, images, tags, featured, is_published
       }]);
 
       if (error) throw error;
@@ -218,10 +220,11 @@ export default function AdminDashboard() {
     const tagsString = formData.get("tags") as string;
     const tags = tagsString ? tagsString.split(",").map(t => t.trim()).filter(Boolean) : [];
     const featured = formData.get("featured") === "on";
+    const is_published = formData.get("is_published") === "on";
 
     try {
       const { error } = await insforge.database.from("projects").update({
-        title, slug, description, content, demo_url, github_url, cover_image, images, tags, featured
+        title, slug, description, content, demo_url, github_url, cover_image, images, tags, featured, is_published
       }).eq("id", editingProject.id);
 
       if (error) throw error;
@@ -334,12 +337,13 @@ export default function AdminDashboard() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const avatar_url = formData.get("avatar_url") as string;
+    const resume_url = formData.get("resume_url") as string;
     
     try {
       if (settings?.id) {
-        await insforge.database.from("site_settings").update({ avatar_url }).eq("id", settings.id);
+        await insforge.database.from("site_settings").update({ avatar_url, resume_url }).eq("id", settings.id);
       } else {
-        await insforge.database.from("site_settings").insert([{ avatar_url }]);
+        await insforge.database.from("site_settings").insert([{ avatar_url, resume_url }]);
       }
       toast.success("Settings saved!");
       fetchSettings();
@@ -466,6 +470,11 @@ export default function AdminDashboard() {
                     <input type="checkbox" name="featured" id="featured" className="w-4 h-4 rounded-none border-2 border-primary accent-primary" />
                     <label htmlFor="featured" className="text-sm font-bold text-foreground">Feature this project?</label>
                   </div>
+
+                  <div className="flex items-center space-x-2 pt-2">
+                    <input type="checkbox" name="is_published" id="is_published" defaultChecked className="w-4 h-4 rounded-none border-2 border-primary accent-primary" />
+                    <label htmlFor="is_published" className="text-sm font-bold text-foreground">Publish immediately (disable for drafts)</label>
+                  </div>
                   
                   <DialogFooter className="pt-4">
                     <Button type="button" variant="outline" onClick={() => setIsAddProjectOpen(false)} className="rounded-none border-2 border-primary shadow-[2px_2px_0_0_#000] active:translate-y-px active:shadow-none">Cancel</Button>
@@ -483,9 +492,12 @@ export default function AdminDashboard() {
           ) : (
             <div className="grid gap-4">
               {projects.map((proj) => (
-                <div key={proj.id} className="p-4 bg-card border-2 border-primary shadow-[4px_4px_0_0_#000] flex justify-between items-center">
+                <div key={proj.id} className={`p-4 border-2 border-primary shadow-[4px_4px_0_0_#000] flex justify-between items-center ${proj.is_published ? 'bg-card' : 'bg-background opacity-80'}`}>
                   <div>
-                    <h3 className="font-bold text-foreground text-lg">{proj.title}</h3>
+                    <div className="flex items-center gap-3">
+                      <h3 className="font-bold text-foreground text-lg">{proj.title}</h3>
+                      {!proj.is_published && <span className="px-2 py-0.5 bg-zinc-800 text-zinc-300 text-xs font-bold uppercase border border-zinc-600 rounded-sm">Draft</span>}
+                    </div>
                     <p className="text-sm text-primary mb-2 font-bold">{proj.slug}</p>
                   </div>
                   <div className="space-x-2 flex items-center">
@@ -557,6 +569,11 @@ export default function AdminDashboard() {
                             <div className="flex items-center space-x-2 pt-2">
                               <input type="checkbox" name="featured" id={`featured-${editingProject.id}`} defaultChecked={editingProject.featured} className="w-4 h-4 rounded-none border-2 border-primary accent-primary" />
                               <label htmlFor={`featured-${editingProject.id}`} className="text-sm font-bold text-foreground">Feature this project?</label>
+                            </div>
+
+                            <div className="flex items-center space-x-2 pt-2">
+                              <input type="checkbox" name="is_published" id={`is_published-${editingProject.id}`} defaultChecked={editingProject.is_published} className="w-4 h-4 rounded-none border-2 border-primary accent-primary" />
+                              <label htmlFor={`is_published-${editingProject.id}`} className="text-sm font-bold text-foreground">Publish project (disable for drafts)</label>
                             </div>
                             
                             <DialogFooter className="pt-4">
@@ -817,14 +834,28 @@ export default function AdminDashboard() {
           <h2 className="text-xl font-bold text-foreground mb-6">Site Settings</h2>
           <div className="p-6 bg-card border-2 border-primary shadow-[4px_4px_0_0_#000] max-w-2xl">
             <form onSubmit={handleSaveSettings} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-primary uppercase tracking-wider">Avatar</label>
-                <SingleImageUpload 
-                  name="avatar_url" 
-                  value={settings?.avatar_url || ""} 
-                  onChange={(url) => setSettings(settings ? { ...settings, avatar_url: url } : { avatar_url: url } as SiteSettings)} 
-                />
-                <p className="text-xs text-foreground/60">Leave blank to use the default 'MZ' dummy avatar.</p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-primary uppercase tracking-wider">Avatar Image</label>
+                  <SingleImageUpload 
+                    name="avatar_url" 
+                    value={settings?.avatar_url || ""} 
+                    onChange={(url) => setSettings(settings ? { ...settings, avatar_url: url } : { avatar_url: url, resume_url: null, id: '' } as SiteSettings)} 
+                  />
+                  <p className="text-xs text-foreground/60">Leave blank to use the default 'MZ' dummy avatar.</p>
+                </div>
+                
+                <div className="space-y-2 pt-4 border-t-2 border-primary">
+                  <label className="text-sm font-bold text-primary uppercase tracking-wider">Resume (PDF)</label>
+                  <SingleFileUpload 
+                    name="resume_url" 
+                    value={settings?.resume_url || ""} 
+                    onChange={(url) => setSettings(settings ? { ...settings, resume_url: url } : { avatar_url: null, resume_url: url, id: '' } as SiteSettings)}
+                    label="Upload PDF Resume"
+                    accept="application/pdf"
+                  />
+                  <p className="text-xs text-foreground/60">This file will be available for download in the Hero section.</p>
+                </div>
               </div>
               <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground border-2 border-black rounded-none shadow-[4px_4px_0_0_#000] active:translate-y-1 active:shadow-none transition-all">
                 <Save className="w-4 h-4 mr-2" /> Save Settings
