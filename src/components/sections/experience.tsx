@@ -2,30 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { insforge, type WorkExperience } from "@/lib/insforge";
+import { type WorkExperience } from "@/lib/insforge";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { Briefcase, Loader2 } from "lucide-react";
+import { Briefcase } from "lucide-react";
 
-export function Experience() {
-  const [experiences, setExperiences] = useState<WorkExperience[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function Experience({ experiences }: { experiences: WorkExperience[] }) {
 
-  useEffect(() => {
-    const fetchExperiences = async () => {
-      const { data, error } = await insforge.database
-        .from("work_experience")
-        .select("*")
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: false });
-        
-      if (!error && data) {
-        setExperiences(data);
-      }
-      setIsLoading(false);
-    };
 
-    fetchExperiences();
-  }, []);
 
   return (
     <section id="experience" className="py-24 container mx-auto px-4 md:px-8 bg-background">
@@ -35,11 +18,6 @@ export function Experience() {
       />
 
       <div className="max-w-4xl mx-auto mt-12 relative">
-        {isLoading ? (
-          <div className="flex justify-center my-20">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : (
           <>
             {/* Timeline Line */}
             <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-1 bg-primary transform md:-translate-x-1/2" />
@@ -80,7 +58,6 @@ export function Experience() {
               ))}
             </div>
           </>
-        )}
       </div>
     </section>
   );

@@ -8,7 +8,9 @@ const pixelifySans = Pixelify_Sans({
   subsets: ["latin"],
 });
 
-import { AiChat } from "@/components/ai-chat/ai-chat";
+import dynamic from "next/dynamic";
+
+const AiChat = dynamic(() => import("@/components/ai-chat/ai-chat").then(mod => mod.AiChat));
 
 import { siteConfig } from "@/config/site";
 
@@ -40,6 +42,7 @@ import { Preloader } from "@/components/ui/preloader";
 import { CustomCursor } from "@/components/ui/custom-cursor";
 import { BackToTop } from "@/components/ui/back-to-top";
 import { ParallaxBg } from "@/components/ui/parallax-bg";
+import { LazyMotion, domAnimation } from "framer-motion";
 
 export default function RootLayout({
   children,
@@ -78,12 +81,14 @@ export default function RootLayout({
           defaultTheme="dark"
           enableSystem
         >
-          <ParallaxBg />
-          <Preloader />
-          <CustomCursor />
-          {children}
-          <AiChat />
-          <BackToTop />
+          <LazyMotion features={domAnimation}>
+            <ParallaxBg />
+            <Preloader />
+            <CustomCursor />
+            {children}
+            <AiChat />
+            <BackToTop />
+          </LazyMotion>
           <Toaster position="bottom-right" />
         </ThemeProvider>
       </body>

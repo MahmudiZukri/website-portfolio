@@ -1,42 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Loader2, X, ChevronLeft, ChevronRight, Images } from "lucide-react";
+import { ExternalLink, X, ChevronLeft, ChevronRight, Images } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
-import { insforge, type Project } from "@/lib/insforge";
+import { type Project } from "@/lib/insforge";
 import Image from "next/image";
 import { useSound } from "@/hooks/use-sound";
 
-
-export function Projects() {
+export function Projects({ initialProjects }: { initialProjects: Project[] }) {
   const [filter, setFilter] = useState("All");
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [projects] = useState<Project[]>(initialProjects);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const { playHover, playClick } = useSound();
-
-  useEffect(() => {
-    const fetchProjects = async () => {
-      const { data, error } = await insforge.database
-        .from("projects")
-        .select("*")
-        .eq("is_published", true)
-        .order("order_index", { ascending: true })
-        .order("created_at", { ascending: false });
-        
-      if (!error && data) {
-        setProjects(data);
-      }
-      setIsLoading(false);
-    };
-
-    fetchProjects();
-  }, []);
+  const { playClick, playHover } = useSound();
 
   const filteredProjects = projects.filter(
     project => filter === "All" || project.tags?.includes(filter)
@@ -104,95 +84,91 @@ export function Projects() {
         ))}
       </div>
 
-      {isLoading ? (
-        <div className="flex justify-center my-20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      ) : (
-        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <AnimatePresence>
-            {filteredProjects.map((project) => (
-              <motion.div
-                key={project.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.3 }}
-                className="h-full group"
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <AnimatePresence mode="popLayout">
+          {filteredProjects.map((project) => (
+            <motion.div
+              key={project.id}
+              layout
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3 }}
+              className="h-full group"
+            >
+              <div 
+                className="flex flex-col h-full bg-card border-2 border-primary shadow-[6px_6px_0_0_#000] hover:-translate-y-1 hover:shadow-[10px_10px_0_0_#000] transition-all"
+                onMouseEnter={playHover}
               >
                 <div 
-                  className="flex flex-col h-full bg-card border-2 border-primary shadow-[6px_6px_0_0_#000] hover:-translate-y-1 hover:shadow-[10px_10px_0_0_#000] transition-all"
-                  onMouseEnter={playHover}
+                  className="relative h-48 overflow-hidden border-b-2 border-primary cursor-pointer"
+                  onClick={() => {
+                    playClick();
+                    openGallery(project);
+                  }}
                 >
-                  <div 
-                    className="relative h-48 overflow-hidden border-b-2 border-primary cursor-pointer"
-                    onClick={() => {
-                      playClick();
-                      openGallery(project);
-                    }}
-                  >
-                    {project.cover_image && (
-                      <div className="absolute inset-0 bg-muted">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={project.cover_image} 
-                          alt={project.title || "Project"} 
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    {/* Gallery indicator */}
-                    {project.images && project.images.length > 0 && (
-                      <div className="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 text-xs font-bold flex items-center gap-1 border border-white/30">
-                        <Images className="w-3 h-3" />
-                        {project.images.length + (project.cover_image ? 1 : 0)}
-                      </div>
-                    )}
-                  </div>
+                  {project.cover_image && (
+                    <div className="absolute inset-0 bg-muted">
+                      <Image
+                        src={project.cover_image} 
+                        alt={project.title || "Project"} 
+                        fill
+                        className="object-cover"
+                        placeholder="blur"
+                        blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+                      />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  {/* Gallery indicator */}
+                  {project.images && project.images.length > 0 && (
+                    <div className="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 text-xs font-bold flex items-center gap-1 border border-white/30">
+                      <Images className="w-3 h-3" />
+                      {project.images.length + (project.cover_image ? 1 : 0)}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="p-6 flex flex-col flex-grow">
+                  <h3 className="text-xl font-bold text-foreground mb-2">{project.title}</h3>
+                  <p className="text-foreground/80 text-sm mb-4 flex-grow">{project.description}</p>
                   
-                  <div className="p-6 flex flex-col flex-grow">
-                    <h3 className="text-xl font-bold text-foreground mb-2">{project.title}</h3>
-                    <p className="text-foreground/80 text-sm mb-4 flex-grow">{project.description}</p>
-                    
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {project.tags?.map((tag) => (
-                        <Badge key={tag} variant="secondary" className="bg-background text-foreground border border-primary rounded-none">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {project.tags?.map((tag) => (
+                      <Badge key={tag} variant="secondary" className="bg-background text-foreground border border-primary rounded-none">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
 
-                    <div className="flex items-center gap-4 mt-auto">
-                      {project.demo_url && (
-                        <a href={project.demo_url} target="_blank" rel="noreferrer">
-                          <Button variant="default" size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 border-2 border-black rounded-none shadow-[2px_2px_0_0_#000] active:translate-y-px active:shadow-none">
-                            <ExternalLink className="w-4 h-4 mr-2" />
-                            {project.demo_url.includes('play.google.com') 
-                              ? 'Play Store' 
-                              : project.demo_url.includes('apps.apple.com') 
-                                ? 'App Store' 
-                                : 'Visit Website'}
-                          </Button>
-                        </a>
-                      )}
-                      {project.github_url && project.github_url.trim() !== "" && project.github_url !== "null" && (
-                        <a href={project.github_url} target="_blank" rel="noreferrer">
-                          <Button variant="outline" size="sm" className="bg-card text-card-foreground border-2 border-primary hover:bg-primary/20 rounded-none shadow-[2px_2px_0_0_#000] active:translate-y-px active:shadow-none">
-                            <FaGithub className="w-4 h-4 mr-2" />
-                            Code
-                          </Button>
-                        </a>
-                      )}
-                    </div>
+                  <div className="flex items-center gap-4 mt-auto">
+                    {project.demo_url && (
+                      <a href={project.demo_url} target="_blank" rel="noreferrer">
+                        <Button variant="default" size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 border-2 border-black rounded-none shadow-[2px_2px_0_0_#000] active:translate-y-px active:shadow-none">
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          {project.demo_url.includes('play.google.com') 
+                            ? 'Play Store' 
+                            : project.demo_url.includes('apps.apple.com') 
+                              ? 'App Store' 
+                              : 'Visit Website'}
+                        </Button>
+                      </a>
+                    )}
+                    {project.github_url && project.github_url.trim() !== "" && project.github_url !== "null" && (
+                      <a href={project.github_url} target="_blank" rel="noreferrer">
+                        <Button variant="outline" size="sm" className="bg-card text-card-foreground border-2 border-primary hover:bg-primary/20 rounded-none shadow-[2px_2px_0_0_#000] active:translate-y-px active:shadow-none">
+                          <FaGithub className="w-4 h-4 mr-2" />
+                          Code
+                        </Button>
+                      </a>
+                    )}
                   </div>
                 </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
-      )}
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
 
       {/* Project Details Modal */}
       <AnimatePresence>
@@ -201,7 +177,7 @@ export function Projects() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 overflow-y-auto"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-y-auto"
             onClick={closeGallery}
           >
             <motion.div
@@ -229,11 +205,13 @@ export function Projects() {
                   {selectedImages.length > 0 ? (
                     <div className="flex flex-col h-full">
                       <div className="relative w-full aspect-video bg-card border-2 border-primary shadow-[4px_4px_0_0_#000] mb-4 overflow-hidden">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <Image
                           src={selectedImages[currentImageIndex]}
                           alt={`${selectedProject.title} - Image ${currentImageIndex + 1}`}
-                          className="w-full h-full object-contain"
+                          fill
+                          className="object-contain"
+                          placeholder="blur"
+                          blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
                         />
                         {/* Navigation Arrows */}
                         {selectedImages.length > 1 && (
@@ -267,8 +245,14 @@ export function Projects() {
                                   : "border-primary/50 opacity-50 hover:opacity-100"
                               }`}
                             >
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={img} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
+                              <Image 
+                                src={img} 
+                                alt={`Thumbnail ${index + 1}`} 
+                                fill
+                                className="object-cover" 
+                                placeholder="blur"
+                                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+                              />
                             </button>
                           ))}
                         </div>

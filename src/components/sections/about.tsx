@@ -8,29 +8,9 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
 
-export function About() {
-  const [skills, setSkills] = useState<Skill[]>([]);
-  const [avatar, setAvatar] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export function About({ skills, avatar }: { skills: Skill[], avatar: string | null }) {
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const [skillsRes, settingsRes] = await Promise.all([
-        insforge.database.from("skills").select("*").order("sort_order", { ascending: true }),
-        insforge.database.from("site_settings").select("avatar_url").limit(1).single()
-      ]);
 
-      if (!skillsRes.error && skillsRes.data) {
-        setSkills(skillsRes.data);
-      }
-      if (!settingsRes.error && settingsRes.data) {
-        setAvatar(settingsRes.data.avatar_url);
-      }
-      setIsLoading(false);
-    };
-
-    fetchData();
-  }, []);
 
   const frontendSkills = skills.filter(s => s.category === 'frontend');
   const backendSkills = skills.filter(s => s.category === 'backend');
@@ -47,14 +27,19 @@ export function About() {
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.5 }}
           className="space-y-6 text-foreground/80 text-lg leading-relaxed flex flex-col items-center md:items-start"
         >
           <div className="relative w-48 h-48 mb-4 border-4 border-primary shadow-[6px_6px_0_0_#000] overflow-hidden bg-card flex items-center justify-center">
             {avatar ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
+              <Image 
+                src={avatar} 
+                alt="Avatar" 
+                fill
+                priority
+                className="object-cover" 
+              />
             ) : (
               <span className="text-4xl text-primary font-bold">MZ</span>
             )}
@@ -71,69 +56,63 @@ export function About() {
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <div className="p-6 md:p-8 bg-card border-2 border-primary shadow-[4px_4px_0_0_#000]">
             <h3 className="text-xl font-bold text-foreground mb-6">Skills & Technologies</h3>
-            {isLoading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : (
-              <div className="space-y-8">
-                <div>
-                  <h4 className="text-sm font-bold text-primary mb-4 uppercase tracking-wider">Frontend</h4>
-                  <div className="relative overflow-hidden flex w-full group">
-                    <motion.div
-                      className="flex gap-4 whitespace-nowrap min-w-max py-2"
-                      animate={{ x: ["0%", "-50%"] }}
-                      transition={{ ease: "linear", duration: 15, repeat: Infinity }}
-                    >
-                      {[...frontendSkills, ...frontendSkills, ...frontendSkills, ...frontendSkills].map((skill, idx) => (
-                        <span key={`${skill.id}-${idx}`} className="px-4 py-2 bg-background text-foreground border-2 border-primary shadow-[2px_2px_0_0_#000] text-sm font-bold">
-                          {skill.name}
-                        </span>
-                      ))}
-                    </motion.div>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-bold text-primary mb-4 uppercase tracking-wider">Backend</h4>
-                  <div className="relative overflow-hidden flex w-full group">
-                    <motion.div
-                      className="flex gap-4 whitespace-nowrap min-w-max py-2"
-                      animate={{ x: ["-50%", "0%"] }}
-                      transition={{ ease: "linear", duration: 15, repeat: Infinity }}
-                    >
-                      {[...backendSkills, ...backendSkills, ...backendSkills, ...backendSkills].map((skill, idx) => (
-                        <span key={`${skill.id}-${idx}`} className="px-4 py-2 bg-background text-foreground border-2 border-primary shadow-[2px_2px_0_0_#000] text-sm font-bold">
-                          {skill.name}
-                        </span>
-                      ))}
-                    </motion.div>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-bold text-primary mb-4 uppercase tracking-wider">Tools & Others</h4>
-                  <div className="relative overflow-hidden flex w-full group">
-                    <motion.div
-                      className="flex gap-4 whitespace-nowrap min-w-max py-2"
-                      animate={{ x: ["0%", "-50%"] }}
-                      transition={{ ease: "linear", duration: 15, repeat: Infinity }}
-                    >
-                      {[...toolSkills, ...toolSkills, ...toolSkills, ...toolSkills].map((skill, idx) => (
-                        <span key={`${skill.id}-${idx}`} className="px-4 py-2 bg-background text-foreground border-2 border-primary shadow-[2px_2px_0_0_#000] text-sm font-bold">
-                          {skill.name}
-                        </span>
-                      ))}
-                    </motion.div>
-                  </div>
+            <div className="space-y-8">
+              <div>
+                <h4 className="text-sm font-bold text-primary mb-4 uppercase tracking-wider">Frontend</h4>
+                <div className="relative overflow-hidden flex w-full group">
+                  <motion.div
+                    className="flex gap-4 whitespace-nowrap min-w-max py-2"
+                    animate={{ x: ["0%", "-50%"] }}
+                    transition={{ ease: "linear", duration: 15, repeat: Infinity }}
+                  >
+                    {[...frontendSkills, ...frontendSkills, ...frontendSkills, ...frontendSkills].map((skill, idx) => (
+                      <span key={`${skill.id}-${idx}`} className="px-4 py-2 bg-background text-foreground border-2 border-primary shadow-[2px_2px_0_0_#000] text-sm font-bold">
+                        {skill.name}
+                      </span>
+                    ))}
+                  </motion.div>
                 </div>
               </div>
-            )}
+
+              <div>
+                <h4 className="text-sm font-bold text-primary mb-4 uppercase tracking-wider">Backend</h4>
+                <div className="relative overflow-hidden flex w-full group">
+                  <motion.div
+                    className="flex gap-4 whitespace-nowrap min-w-max py-2"
+                    animate={{ x: ["-50%", "0%"] }}
+                    transition={{ ease: "linear", duration: 15, repeat: Infinity }}
+                  >
+                    {[...backendSkills, ...backendSkills, ...backendSkills, ...backendSkills].map((skill, idx) => (
+                      <span key={`${skill.id}-${idx}`} className="px-4 py-2 bg-background text-foreground border-2 border-primary shadow-[2px_2px_0_0_#000] text-sm font-bold">
+                        {skill.name}
+                      </span>
+                    ))}
+                  </motion.div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-bold text-primary mb-4 uppercase tracking-wider">Tools & Others</h4>
+                <div className="relative overflow-hidden flex w-full group">
+                  <motion.div
+                    className="flex gap-4 whitespace-nowrap min-w-max py-2"
+                    animate={{ x: ["0%", "-50%"] }}
+                    transition={{ ease: "linear", duration: 15, repeat: Infinity }}
+                  >
+                    {[...toolSkills, ...toolSkills, ...toolSkills, ...toolSkills].map((skill, idx) => (
+                      <span key={`${skill.id}-${idx}`} className="px-4 py-2 bg-background text-foreground border-2 border-primary shadow-[2px_2px_0_0_#000] text-sm font-bold">
+                        {skill.name}
+                      </span>
+                    ))}
+                  </motion.div>
+                </div>
+              </div>
+            </div>
           </div>
         </motion.div>
       </div>

@@ -6,29 +6,13 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-import { useState, useEffect } from "react";
-import { insforge } from "@/lib/insforge";
+import { MagneticButton } from "@/components/ui/magnetic-button";
 import { useSound } from "@/hooks/use-sound";
 
-export function Hero() {
-  const [resumeUrl, setResumeUrl] = useState<string | null>(siteConfig.resumeUrl || null);
+export function Hero({ resumeUrl }: { resumeUrl: string | null }) {
   const { playHover, playClick } = useSound();
 
-  useEffect(() => {
-    const fetchSettings = async () => {
-      const { data } = await insforge.database
-        .from("site_settings")
-        .select("resume_url")
-        .limit(1)
-        .single();
-        
-      if (data?.resume_url) {
-        setResumeUrl(data.resume_url);
-      }
-    };
-    
-    fetchSettings();
-  }, []);
+
 
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
@@ -85,30 +69,34 @@ export function Hero() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="flex flex-col sm:flex-row items-center gap-4"
         >
-          <Link href="#projects">
-            <Button 
-              size="lg" 
-              className="bg-primary hover:bg-primary/90 text-primary-foreground min-w-[160px] border-2 border-black shadow-[4px_4px_0_0_#000] rounded-none active:translate-y-1 active:shadow-none transition-all"
-              onMouseEnter={playHover}
-              onClick={playClick}
-            >
-              View Projects
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
-          
-          {resumeUrl && (
-            <a href={resumeUrl} target="_blank" rel="noopener noreferrer">
+          <MagneticButton>
+            <Link href="#projects">
               <Button 
                 size="lg" 
-                variant="outline" 
-                className="bg-card hover:bg-primary/20 text-card-foreground min-w-[160px] border-2 border-primary shadow-[4px_4px_0_0_#000] rounded-none active:translate-y-1 active:shadow-none transition-all"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground min-w-[160px] border-2 border-black shadow-[4px_4px_0_0_#000] rounded-none active:translate-y-1 active:shadow-none transition-all"
                 onMouseEnter={playHover}
                 onClick={playClick}
               >
-                Download Resume
+                View Projects
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-            </a>
+            </Link>
+          </MagneticButton>
+          
+          {resumeUrl && (
+            <MagneticButton>
+              <a href={resumeUrl} target="_blank" rel="noopener noreferrer">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="bg-card hover:bg-primary/20 text-card-foreground min-w-[160px] border-2 border-primary shadow-[4px_4px_0_0_#000] rounded-none active:translate-y-1 active:shadow-none transition-all"
+                  onMouseEnter={playHover}
+                  onClick={playClick}
+                >
+                  Download Resume
+                </Button>
+              </a>
+            </MagneticButton>
           )}
         </motion.div>
       </div>
