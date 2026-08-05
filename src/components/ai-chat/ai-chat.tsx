@@ -17,7 +17,7 @@ export function AiChat() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -30,7 +30,7 @@ export function AiChat() {
 
   const handleSubmit = async (text: string) => {
     if (!text.trim()) return;
-    
+
     const userMessage = { role: "user" as const, content: text };
     setMessages(prev => [...prev, userMessage]);
     setInput("");
@@ -44,12 +44,12 @@ export function AiChat() {
       });
 
       if (!response.ok) throw new Error("Failed to fetch response");
-      
+
       const reader = response.body?.getReader();
       if (!reader) return;
 
       setMessages(prev => [...prev, { role: "assistant", content: "" }]);
-      
+
       const decoder = new TextDecoder();
       let done = false;
 
@@ -57,7 +57,7 @@ export function AiChat() {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
         const chunkValue = decoder.decode(value);
-        
+
         setMessages(prev => {
           const lastMsg = prev[prev.length - 1];
           return [
@@ -69,7 +69,7 @@ export function AiChat() {
     } catch (error) {
       console.error(error);
       setMessages(prev => [
-        ...prev, 
+        ...prev,
         { role: "assistant", content: "Sorry, I'm having trouble connecting right now. Please try again later." }
       ]);
     } finally {
@@ -88,10 +88,11 @@ export function AiChat() {
             className="fixed bottom-6 right-6 z-50"
           >
             <Button
+              size="icon"
               onClick={() => setIsOpen(true)}
-              className="h-14 w-14 bg-primary text-primary-foreground border-2 border-black rounded-none shadow-[4px_4px_0_0_#000] hover:bg-primary/90 hover:shadow-[6px_6px_0_0_#000] active:translate-y-1 active:shadow-none transition-all"
+              className="h-14 w-14 p-0 bg-primary text-primary-foreground border-2 border-black rounded-none shadow-[4px_4px_0_0_#000] hover:bg-primary/90 hover:shadow-[6px_6px_0_0_#000] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center"
             >
-              <MessageCircle className="h-6 w-6 text-primary-foreground" />
+              <MessageCircle className="h-6 w-6" strokeWidth={3} />
             </Button>
           </motion.div>
         )}
@@ -136,7 +137,7 @@ export function AiChat() {
 
             {/* Input Area */}
             <div className="p-4 bg-background border-t-2 border-primary">
-              <form 
+              <form
                 onSubmit={(e) => { e.preventDefault(); handleSubmit(input); }}
                 className="flex gap-2"
               >
@@ -147,9 +148,9 @@ export function AiChat() {
                   className="bg-card border-2 border-primary focus-visible:ring-0 focus-visible:border-black text-foreground rounded-none shadow-[2px_2px_0_0_#000]"
                   disabled={isLoading}
                 />
-                <Button 
-                  type="submit" 
-                  size="icon" 
+                <Button
+                  type="submit"
+                  size="icon"
                   className="bg-primary hover:bg-primary/90 text-primary-foreground border-2 border-black rounded-none shadow-[4px_4px_0_0_#000] active:translate-y-1 active:shadow-none transition-all flex-shrink-0"
                   disabled={!input.trim() || isLoading}
                 >
